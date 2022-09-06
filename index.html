@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta content="edge" http-equiv="X-UA-Compatible" />
+    <title>小鹤音形练习</title>
+    <script src="assets/vue.js"></script>
+    <script src="assets/chars.js?v=5"></script>
+    <script src="assets/words.js?v=5"></script>
+    <script src="assets/sentences.js?v=5"></script>
+
+    <style>
+        html {
+            font-size: 20px;
+            font-family: "PingFang SC";
+        }
+
+        body,
+        td {
+            font-size: .6rem;
+            line-height: 1.0rem;
+        }
+
+        body {
+            background: whitesmoke;
+            margin: 0px;
+            padding: 0px;
+        }
+
+        .myapp-header {
+            text-align: left;
+            border-bottom: 3px solid lightslategray;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: absolute;
+            z-index: 5;
+            top: 0px;
+            left: 0px;
+            right: 0px;
+            height: 2.3rem;
+            overflow-y: hidden;
+        }
+
+        .myapp-layout {
+            position: absolute;
+            left: 0;
+            top: 2.3rem;
+            bottom: 4px;
+            right: 0;
+            width: 100%;
+            display: flex;
+            align-items: flex-start;
+            justify-content: stretch;
+            flex-direction: row;
+            z-index: 1;
+        }
+
+        .myapp-layout-left,
+        .myapp-layout-main,
+        .myapp-layout-right,
+        .myapp-layout-splitter {
+            overflow: scroll;
+            height: 100%;
+        }
+
+        .myapp-layout-main {
+            flex: 1;
+            overflow: scroll;
+            height: 100%;
+        }
+
+        .myapp-layout-left {
+            flex: 5;
+        }
+
+        .myapp-layout-right {
+            flex: 5;
+        }
+
+        .myapp-layout-splitter {
+            width: 4px;
+            background: lightslategrey;
+            font-size: 3px;
+        }
+
+        .myapp-layout-panel {
+            padding: 5px 5px 20rem 5px;
+            font-size: .8rem;
+            line-height: 1.25rem;
+        }
+
+        .myapp-layout-panel img {
+            width: 100%;
+            border: 1px solid lightgrey;
+            margin-bottom: 5px;
+        }
+
+        .myapp-layout-panel div.subtitle {
+            font-size: 1.1rem;
+            color: darkblue;
+            line-height: 1.5rem;
+        }
+
+
+        .myapp-item {
+            border-bottom: 1px solid lightgray;
+            border-top: 1px solid white;
+            background: whitesmoke;
+            color: black;
+            font-family: "Helvetica Neue";
+            display: flex;
+            justify-content: space-between;
+            gap: .25rem;
+            align-items: center;
+        }
+
+        .myapp-item-no {
+            width: 2rem;
+        }
+
+        .myapp-item-box {
+            display: flex;
+            flex: 1;
+            align-items: left;
+            justify-content: space-between;
+            flex-direction: column;
+        }
+
+        .myapp-item-text {
+            font-size: 0.8rem;
+            padding-right: 0.5rem;
+        }
+
+        .myapp-item-input {
+            font-size: 0.8rem;
+            flex: 1;
+        }
+
+        .myapp-item-box.singleline {
+            flex-direction: row;
+        }
+
+        .myapp-item-text-box.singleline .myapp-item-input {
+            flex: 1;
+        }
+
+        .myapp-item-input.status-correct {
+            color: blue;
+        }
+
+        .myapp-item-input.status-wrong {
+            color: red;
+        }
+    </style>
+</head>
+
+<body>
+    <!--  -->
+    <div id="app">
+        <div class="myapp-header">
+            <div>
+                <strong style="font-size:1.2rem;">小鹤音形练习</strong>
+            </div>
+            <div style="display:flex;justify-content: space-between;">
+                <button @click.stop="loadItems('exampleChars')">鹤形例字</button>
+                <button @click.stop="loadItems('3500Chars')">3500常用字</button>
+                <button @click.stop="loadItems('500Chars')">500高频字</button>
+                <button @click.stop="loadItems('6763Chars')">6763个汉字</button>
+                <button @click.stop="loadItems('random100Words')">随机100词组</button>
+                <button @click.stop="loadItems('random100Sentences')">随机100名句</button>
+
+            </div>
+            <div>
+                界面大小：<br>
+                <select v-model="leftPanelFlex">
+                    <option value="">左侧</option>
+                    <option v-for="i in 9" :value="i">{{i}}</option>
+                </select>
+                <select v-model="midPanelFlex">
+                    <option value="">中间</option>
+                    <option v-for="i in 9" :value="i">{{i}}</option>
+                </select>
+                <select v-model="rightPanelFlex">
+                    <option value="">右侧</option>
+                    <option v-for="i in 9" :value="i">{{i}}</option>
+                </select>
+
+            </div>
+        </div>
+        <div class="myapp-layout">
+            <div :style="{flex: (leftPanelFlex || 5)}" class="myapp-layout-left" id="appLeftPanel">
+                <div class="myapp-layout-panel">
+                    <div class="subtitle">小鹤双拼键位图&darr;</div>
+                    <img src="assets/hejp.png?v=1">
+                    <div class="subtitle">双拼方案</div>
+                    一、双拼方案：<br>
+                    使用两个字母对汉字进行编码的方案，第一个字母表示声母，第二字母表示韵母，没有声母时用零声母代替 单字母声母韵母键位不变，双字母声母和多字母韵母位置见“双拼键位图”<br>
+
+                    二、零声母方案：<br>
+                    指全拼中无声母的韵母音节在双拼中的处理方案，用来充当其声母的字母即零声母<br>
+
+                    <br>
+                    本方案以韵母首字母为零声母，即把韵母的首字母当作声母<br>
+                    单字母韵母，零声母 + 韵母所在键，如： 啊＝aa 哦=oo 额=ee<br>
+                    双字母韵母，零声母 + 韵母末字母，如： 爱＝ai 恩=en 欧=ou<br>
+                    三字母韵母，零声母 + 韵母所在键，如： 昂＝ah<br>
+
+                    <br>
+                    简单说：双字母音节保持全拼方式，一三字母音节为首字母加韵母所在键<br>
+                    <div class="subtitle">记忆口诀①（官方版）：</div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th align="center">Qiu</th>
+                                <th align="center">Wei</th>
+                                <th align="center">Ruan</th>
+                                <th align="center">T_ue_ve</th>
+                                <th align="center">Yun</th>
+                                <th align="center">U_shu</th>
+                                <th align="center">I_chi</th>
+                                <th align="center">Song_iong</th>
+                                <th align="center">Dai</th>
+                                <th align="center">Fen</th>
+                                <th align="center">Geng</th>
+                                <th align="center">Hang</th>
+                                <th align="center">J_an</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td align="center">秋</td>
+                                <td align="center">闱</td>
+                                <td align="center">软</td>
+                                <td align="center">月</td>
+                                <td align="center">云</td>
+                                <td align="center">梳</td>
+                                <td align="center">翅</td>
+                                <td align="center">松　拥</td>
+                                <td align="center">黛</td>
+                                <td align="center">粉</td>
+                                <td align="center">更</td>
+                                <td align="center">航</td>
+                                <td align="center">安</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th align="center">Kuai_ing</th>
+                                <th align="center">Liang_uang</th>
+                                <th align="center">Zou</th>
+                                <th align="center">Xia_ua</th>
+                                <th align="center">Pie</th>
+                                <th align="center">Cao</th>
+                                <th align="center">V_zhui_v</th>
+                                <th align="center">Bin</th>
+                                <th align="center">Niao</th>
+                                <th>Mian</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td align="center">快　莺</td>
+                                <td align="center">两　望</td>
+                                <td align="center">奏</td>
+                                <td align="center">夏　蛙</td>
+                                <td align="center">撇</td>
+                                <td align="center">草</td>
+                                <td align="center">追　鱼</td>
+                                <td align="center">滨</td>
+                                <td align="center">鸟</td>
+                                <td>眠</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="subtitle">记忆口诀②（智信恒版）： </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th align="center">Kuai_ing</th>
+                                <th align="center">Liang_uang</th>
+                                <th align="center">Ruan</th>
+                                <th align="center">Cao</th>
+                                <th align="center">Zou</th>
+                                <th align="center">T_ue_ve</th>
+                                <th align="center">Qiu</th>
+                                <th align="center">Yun</th>
+                                <th align="center">Wei</th>
+                                <th align="center">J_an</th>
+                                <th align="center">Mian</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td align="center">快　迎</td>
+                                <td align="center">两　王</td>
+                                <td align="center">软</td>
+                                <td align="center">草</td>
+                                <td align="center">走</td>
+                                <td align="center">特　约</td>
+                                <td align="center">秋</td>
+                                <td align="center">云</td>
+                                <td align="center">为</td>
+                                <td align="center">见</td>
+                                <td align="center">面</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th align="center">Xia_ua</th>
+                                <th align="center">Song_iong</th>
+                                <th align="center">U_shu</th>
+                                <th align="center">I_chi</th>
+                                <th align="center">V_zhui_v</th>
+                                <th align="center">Geng</th>
+                                <th align="center">Dai</th>
+                                <th align="center">Bin</th>
+                                <th align="center">Niao</th>
+                                <th align="center">Fen</th>
+                                <th align="center">Pie</th>
+                                <th align="center">Hang</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td align="center">夏　娃</td>
+                                <td align="center">怂　恿</td>
+                                <td align="center">书</td>
+                                <td align="center">痴</td>
+                                <td align="center">追</td>
+                                <td align="center">更</td>
+                                <td align="center">待</td>
+                                <td align="center">滨</td>
+                                <td align="center">鸟</td>
+                                <td align="center">分</td>
+                                <td align="center">撇</td>
+                                <td align="center">航</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+            <div class="myapp-layout-splitter"></div>
+            <div class="myapp-layout-main" :style="{flex: (midPanelFlex || 2) }">
+                <div class="myapp-items">
+                    <div class="myapp-item" v-for="(s,i) in items" :key="s.text">
+                        <div class="myapp-item-no">{{i+1}}</div>
+                        <div class="myapp-item-box" :class="{singleline:singleline}">
+                            <div class="myapp-item-text" :title="s.help + ' '+s.note">
+                                {{s.text}}
+                            </div>
+                            <input class="myapp-item-input" :class="'status'+s.status" type="text" v-model="s.input"
+                                ref="item-input-box" autocapitalize="off" autocomplete="off" autocorrect="off"
+                                @keyup.enter.stop="onSubmitItem(s,i)">
+                            </input>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="myapp-layout-splitter"></div>
+            <div :style="{flex: (rightPanelFlex || 5)}" class="myapp-layout-right" id="appRightPanel">
+                <div class="myapp-layout-panel">
+                    <div class="subtitle">部件字根图&darr;</div>
+                    <img src="assets/xhup.png?v=1">
+                    <div class="subtitle">双形方案</div>
+                    双形即从每个字中提取首末两部分形态各异的组字单元，以区分同音字。
+                    <div class="subtitle">鹤形包含以下三类：&darr;</div>
+                    <img src="assets/tu.png?v=1">
+                    <div>
+                        部件字根 ____ 基本为偏旁部首，日常称谓定其键位，必须掌握！<br>
+                        小字字根 ____ 基本为小且独立的字，规则推导字根，按其声母定键，理解为主。<br>
+                    </div>
+                    <div class="subtitle">拆分规则</div>
+                    <div>
+                        字取首末：一个字取其首末两个字根（小字或部件），孰大优先，无则取笔画<br>
+                        相交不拆：字根如与其它笔画相交，则不取<br>
+                        插隔不取：字根如被单笔画插入或被结构隔离则不再被认为是字根<br>
+                        “廴辶”优先：以“廴 辶”为部首的字，首码先取<br>
+                        <br>
+                        注：<br>
+                        单笔画字因无字根可拆，重复自身笔画码补全四码，如：一 yiaa、乙 yivv<br>
+                        单笔画字被用做字根时，当笔画解，如：旦 djoa、亿 yirv<br>
+                        繁体字根可视同其简体字根，如：鳥鸟，馬马，魚鱼，車车，糹纟，飠饣，門门，釒钅……等<br>
+                    </div>
+                    <div class="subtitle">
+                        部件字根记忆
+                    </div>
+                    <img src="assets/bujm.png?v=1">
+
+                    <div class="subtitle">
+                        小字字根列表
+                    </div>
+                    <ol>
+                        <li>一些可能会不认识的小字：戊wù、戌xū、耒lěi、爿pán、豕shǐ、臾yú、聿yù、廿niàn、巳sì、曳yè、夬guài
+                        </li>
+                        <li>a 凹
+                        </li>
+                        <li>b 百 白 八 卜 匕 卞 不 巴 本 必 丙 半 办
+                        </li>
+                        <li>c 寸 才 匆 册
+                        </li>
+                        <li>d 大 丁 刀 歹 刁 东 丹 电 氐
+                        </li>
+                        <li>e 二 耳 儿 而
+                        </li>
+                        <li>f 非 方 飞 夫 凡 甫 弗 乏 丰
+                        </li>
+                        <li>g 广 弓 戈 工 瓜 干 个 甘 丐 果 更 夬
+                        </li>
+                        <li>h 禾 户 互 乎 火
+                        </li>
+                        <li>i 川 厂 车 长 叉 尺 丑 臣 成 垂 斥 串 产 出
+                        </li>
+                        <li>j 巾 几 九 斤 久 巨 己 井 及 夹 甲 臼 韭 戋 柬 击
+                        </li>
+                        <li>k 口 开 亏
+                        </li>
+                        <li>l 了 力 乐 来 良 两 里 吏 耒 卵 丽
+                        </li>
+                        <li>m 木 毛 米 门 马 皿 末 灭 母 民 么 面
+                        </li>
+                        <li>n 廿 女 牛 鸟 乃 内 农 年
+                        </li>
+                        <li>p 片 平 爿
+                        </li>
+                        <li>q 七 千 犬 丘 曲 且 气 乞
+                        </li>
+                        <li>r 人 入 冉 壬 刃
+                        </li>
+                        <li>s 三 巳 肃
+                        </li>
+                        <li>t 土 天 太 屯
+                        </li>
+                        <li>u 十 尸 士 手 身 水 上 少 术 失 生 世 申 史 升 事 书 束 勺 戍 豕 氏 矢
+                        </li>
+                        <li>v 止 爪 主 舟 之 正 丈 中 专 朱 州 重 乍
+                        </li>
+                        <li>w 王 瓦 五 无 万 午 亡 未 乌 韦 勿 为 戊 我 丸 兀
+                        </li>
+                        <li>x 小 西 心 血 下 夕 乡 戌 习
+                        </li>
+                        <li>y 又 酉 已 于 义 与 夭 玉 牙 丫 永 尤 也 业 由 央 亚 严 用 幺 禺 臾 尹 禹 夷 弋 聿 雨 曳
+                        <li>z 再 自 子</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        var app = new Vue({
+            el: '#app',
+            data: function () {
+                return {
+                    items: [],//{text:'', help:'', note:''}
+                    rightPanelFlex: 5,
+                    leftPanelFlex: 5,
+                    midPanelFlex: 2,
+                    singleline: false,
+                }
+            },
+            mounted: function () {
+                this.loadItems('exampleChars');
+            },
+            updated: function () {
+            },
+            computed: {
+
+            },
+            methods: {
+                loadItems: function (type) {
+                    let items = [];
+                    this.singleline = false;
+                    if (type === 'exampleChars') {
+                        myappCharsExample.forEach(function (p) {
+                            items.push({ text: p[0], help: p.join(", "), note: '', input: '', status: '' });
+                        });
+                        this.singleline = true;
+                    } else if (type === "3500Chars" || type === "500Chars" || type === "6763Chars") {
+                        let chars = type === "3500Chars" ? myappChars3500 : type === "500Chars" ? myappChars500 : myappChars6763;
+                        chars.forEach(function (p, i) {
+                            if (0 && i % 10 === 0) {
+                                items.push({ text: '', help: '', note: '', input: '', status: '' });
+                            }
+                            if (items.length <= 0 || items[items.length - 1].text.length > 10) {
+                                items.push({ text: '', help: '', note: '', input: '', status: '' });
+                            }
+                            items[items.length - 1].text += p;
+                        });
+                    } else if (type === 'random100Words') {
+                        let s = new Date().getMilliseconds() % myappWords.length;
+                        let item = null;
+                        while (items.length < 100) {
+                            item = myappWords[s++ % myappWords.length];
+                            items.push({ text: item.text, help: item.pinyin, note: '', input: '', status: '' })
+                        }
+                    } else if (type === "random100Sentences") {
+                        let s = new Date().getMilliseconds() % myappSentences.length;
+                        let item = null;
+                        while (items.length < 100) {
+                            item = myappSentences[s++ % myappSentences.length];
+                            items.push({ text: item.text, help: '', note: item.from, input: '', status: '' })
+                        }
+                    }
+                    this.items = items;
+
+                },
+
+                onSubmitItem: function (w, idx) {
+                    var isValidated = w.text === w.input.replaceAll(/\s,/g, " ");
+                    w.status = isValidated ? 'correct' : 'wrong';
+                    this._nextItem(idx + 1);
+
+                },
+                onMovePanelVision: function (direction) {
+                    var rightFlex = this.rightPanelFlex + direction;
+                    if (rightFlex < 0 || rightFlex > 10) return;
+                    this.rightPanelFlex = rightFlex;
+                },
+                _nextItem: function (nextIdx) {
+                    this.$refs['item-input-box'][nextIdx - 1].scrollIntoView({
+                        behavior: "smooth",
+                        block: "start",
+                        inline: "nearest"
+                    });
+                    this.$refs['item-input-box'][nextIdx].focus();
+                },
+
+            },
+        });
+    </script>
+</body>
